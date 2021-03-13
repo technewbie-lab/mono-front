@@ -1,39 +1,34 @@
 <template>
-  <v-app>
-    <v-container>
-      <v-row justify="center" align="center">
-        <v-col cols="12">
-          <v-card max-width="300">
-            <v-list-item>
-              <v-list-item-avatar>
-                <v-icon x-large> mdi-account-circle </v-icon>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-subtitle>{{ userId }}</v-list-item-subtitle>
-                <v-list-item-title class="title">
-                  {{ userName }}
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-app>
+  <v-container>
+    <v-row class="mt-10 mb-10">
+      <v-col justify="center" align="center">
+        <h3>ユーザー詳細</h3>
+      </v-col>
+    </v-row>
+    <Form
+      @submit="update"
+      pageType="detail"
+      isEdit="true"
+      :userId="userId"
+      :name="userName"
+    >
+      UPDATE
+    </Form>
+  </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
+import Form from "../components/Form.vue";
 
-@Component
+@Component({ components: { Form } })
 export default class UserDetail extends Vue {
   userId = "";
   userName = "";
 
-  // インスタンスライフサイクルフックによる割り込み処理
   async created() {
-    const url = "http://localhost:9000/users";
+    const url = "http://localhost:8080/users";
     this.userId = this.$route.params.id;
     const response = await axios.get(url, {
       params: {
@@ -41,6 +36,20 @@ export default class UserDetail extends Vue {
       },
     });
     this.userName = response.data.users[0].name;
+  }
+  async update(name: string) {
+    const answer = confirm(`更新してもよろしいですか？`);
+    if (answer) {
+      const url = "http://localhost:8080/users/update";
+      const params = {
+        id: this.userId,
+        name: name,
+      };
+      const response = await axios.post(url, params);
+      if (response.data.code === 200) {
+        this.userName = name;
+      }
+    }
   }
 }
 </script>
